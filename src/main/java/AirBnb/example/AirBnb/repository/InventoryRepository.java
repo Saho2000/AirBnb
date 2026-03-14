@@ -37,5 +37,21 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
             Pageable pageable
     );
 
+    @Query("""
+            SELECT i
+            FROM Inventory i
+            WHERE i.room.id = :roomId
+                AND i.date BETWEEN :startDate AND :endDate
+                AND i.closed = false
+                AND (i.totalCount - i.bookedCount - i.reservedCount) >= :roomsCount
+            """)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<Inventory> findAndLockAvailableInventory(
+            @Param("roomId") Long roomId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("roomsCount") Integer roomsCount
+    );
+
 
 }
